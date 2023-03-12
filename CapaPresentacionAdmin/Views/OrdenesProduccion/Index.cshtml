@@ -11,15 +11,15 @@
     <div class="row">
         <hr />
         <div class="col-12">
-            @if (ViewBag.TrabajandoActualmente)
-            {
-                <a class="btn btn-success disabled" href="#" style="margin-left: 10px;"><i class="fas fa-plus-circle"></i> Crear OP</a>
-                <span style="color: red; margin-left: 10px;">No puede crear una nueva OP hasta que finalice la que está en curso.</span>
-            }
-            else
+            @if (!ViewBag.TrabajandoActualmente)
             {
                 <a class="btn btn-success" href="@Url.Action("Create", "OrdenesProduccion")" style="margin-left: 10px;"><i class="fas fa-plus-circle"></i> Crear OP</a>
             }
+            @*else
+            {
+                <a class="btn btn-success disabled" href="#" style="margin-left: 10px;"><i class="fas fa-plus-circle"></i> Crear OP</a>
+                <span style="color: red; margin-left: 10px;">No puede crear una nueva OP hasta que finalice la que está en curso.</span>
+            }*@
         </div>
     </div>
 

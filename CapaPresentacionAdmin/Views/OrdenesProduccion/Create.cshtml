@@ -62,9 +62,8 @@
                 var modeloId = $(this).val();
                 if (modeloId) {
                     $.ajax({
-                        url: "@Url.Action("GetColoresByModelo", "OrdenesProduccion")",
-                        type: "POST",
-                        data: { idModelo: modeloId },
+                        url: "@Url.Action("GetColoresByModelo", "OrdenesProduccion")" + "?idModelo=" + modeloId,
+                        type: "GET",
                         success: function (data) {
                             $("#ddlColor").empty();
                             $("#ddlColor").append('<option value="">Seleccione un color</option>');
@@ -80,6 +79,7 @@
                 }
             });
         });
+
     </script>
 }
 

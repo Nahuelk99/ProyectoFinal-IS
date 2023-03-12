@@ -22,29 +22,26 @@ namespace CapaPresentacionAdmin.Controllers
             var correoEmpleado = FormsAuthentication.Decrypt(Request.Cookies[FormsAuthentication.FormsCookieName].Value).Name;
             var empleado = db.Empleado.FirstOrDefault(e => e.Correo == correoEmpleado);
 
-
             // Verificar si el supervisor está trabajando actualmente en una orden de producción
             var trabajandoActualmente = db.OrdenProduccion.Any(o => o.SupervisorLinea == empleado.DNI && o.Estado != "Finalizada");
 
             // Crear un ViewBag para pasar la variable trabajandoActualmente a la vista
             ViewBag.TrabajandoActualmente = trabajandoActualmente;
-            var ordenProduccion = db.OrdenProduccion.Include(o => o.Color).Include(o => o.Empleado).Include(o => o.Empleado1).Include(o => o.JornadaLaboral).Include(o => o.Linea).Include(o => o.Modelo);
-            return View(ordenProduccion.ToList());
-        }
 
-        // GET: OrdenProduccions/Details/5
-        public ActionResult Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            OrdenProduccion ordenProduccion = db.OrdenProduccion.Find(id);
-            if (ordenProduccion == null)
-            {
-                return HttpNotFound();
-            }
-            return View(ordenProduccion);
+            // Obtener la orden de producción en la que el supervisor está trabajando actualmente, si hay alguna
+            var ordenProduccion = db.OrdenProduccion
+                .Include(o => o.Color)
+                .Include(o => o.Empleado)
+                .Include(o => o.Empleado1)
+                .Include(o => o.JornadaLaboral)
+                .Include(o => o.Linea)
+                .Include(o => o.Modelo)
+                .FirstOrDefault(o => o.SupervisorLinea == empleado.DNI && o.Estado != "Finalizada");
+
+            // Crear una lista con la orden de producción obtenida, o una lista vacía si no hay ninguna
+            var ordenesProduccion = ordenProduccion != null ? new List<OrdenProduccion> { ordenProduccion } : new List<OrdenProduccion>();
+
+            return View(ordenesProduccion);
         }
 
         // GET: OrdenProduccions/Create
@@ -62,7 +59,7 @@ namespace CapaPresentacionAdmin.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpGet]
         public JsonResult GetColoresByModelo(int idModelo)
         {
             var colores = db.ModeloColor
@@ -70,7 +67,7 @@ namespace CapaPresentacionAdmin.Controllers
                             .Select(mc => new { mc.Color.Codigo, mc.Color.Descripcion })
                             .ToList();
 
-            return Json(colores);
+            return Json(colores, JsonRequestBehavior.AllowGet);
         }
 
         [HttpPost]
@@ -87,11 +84,35 @@ namespace CapaPresentacionAdmin.Controllers
 
                 if (supervisorLinea != null)
                 {
+                    if (db.OrdenProduccion.Any(op => op.NumeroOP == ordenProduccion.NumeroOP))
+                    {
+                        // Si existe una OP con el mismo número, mostrar un mensaje de error
+                        ModelState.AddModelError("", "Ya existe una orden de producción con el mismo número");
+
+                        // Actualizar las opciones de selección
+                        ViewBag.NumeroLinea = new SelectList(db.Linea.Where(l => l.OrdenProduccion.All(op => op.Estado != "Iniciada")), "NumeroLinea", "NumeroLinea");
+                        ViewBag.Modelos = new SelectList(db.Modelo, "IdModelo", "Denominacion");
+                        ViewBag.Colores = Enumerable.Empty<SelectListItem>();
+                        return View(ordenProduccion);
+                    }
+
                     // Comprobar si la línea seleccionada está disponible
                     if (db.OrdenProduccion.Any(op => op.NumeroLinea == ordenProduccion.NumeroLinea && op.Estado == "Iniciada"))
                     {
                         // Si la línea está en uso, mostrar un mensaje de error
                         ModelState.AddModelError("", "La línea seleccionada ya está en uso");
+
+                        // Actualizar las opciones de selección
+                        ViewBag.NumeroLinea = new SelectList(db.Linea.Where(l => l.OrdenProduccion.All(op => op.Estado != "Iniciada")), "NumeroLinea", "NumeroLinea");
+                        ViewBag.Modelos = new SelectList(db.Modelo, "IdModelo", "Denominacion");
+                        ViewBag.Colores = Enumerable.Empty<SelectListItem>();
+                        return View(ordenProduccion);
+                    }
+
+                    if (db.OrdenProduccion.Any(op => op.SupervisorLinea == supervisorLinea.DNI && op.Estado != "Finalizada"))
+                    {
+                        // Si el supervisor tiene una OP no finalizada, mostrar un mensaje de error
+                        ModelState.AddModelError("", "El supervisor de línea tiene una orden de producción no finalizada");
 
                         // Actualizar las opciones de selección
                         ViewBag.NumeroLinea = new SelectList(db.Linea.Where(l => l.OrdenProduccion.All(op => op.Estado != "Iniciada")), "NumeroLinea", "NumeroLinea");

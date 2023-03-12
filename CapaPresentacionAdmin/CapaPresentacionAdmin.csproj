@@ -388,7 +388,6 @@
     <Content Include="Views\Categorias\Edit.cshtml" />
     <Content Include="Views\Categorias\Index.cshtml" />
     <Content Include="Views\Login\Index.cshtml" />
-    <Content Include="Views\Login\Registrar.cshtml" />
     <Content Include="Scripts\loadingoverlay.min.js.map" />
     <Content Include="Views\Shared\_LayoutLinea.cshtml" />
     <Content Include="Views\Sweet\Alert.cshtml" />

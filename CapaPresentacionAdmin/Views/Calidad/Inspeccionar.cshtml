@@ -20,7 +20,12 @@
             float: left;
         }
 
-        .hora-btn {
+        #horas-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .btn-hora {
             display: inline-block;
             width: 100px;
             margin-right: 25px;
@@ -84,15 +89,7 @@
         <br />
         <!--Elemento HTML para las horas-->
         <div id="horas-container"></div>
-        <!-- Crear botones por separado -->
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="14:00">14:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="15:00">15:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="16:00">16:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="17:00">17:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="18:00">18:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="19:00">19:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="20:00">20:00</button>
-        <button type="button" class="btn btn-outline-secondary hora-btn" data-hora="21:00">21:00</button>
+
         <hr />
         <div>
             Pares de primera:
@@ -153,15 +150,31 @@
                 dataType: "json",
                 success: function (data) {
                     $.each(data, function (index, value) {
-                        // Se obtiene el timestamp en milisegundos de la cadena de texto
-                        var horaMilisegundos = parseInt(value.substring(6, 19)); 
-                        // Se crea un objeto Date a partir del timestamp en milisegundos
-                        var hora = new Date(horaMilisegundos);
+                        var horaArray = value.split(":");
+                        var hora = new Date();
+                        hora.setHours(parseInt(horaArray[0]));
+                        hora.setMinutes(parseInt(horaArray[1]));
                         // Se formatea la hora en formato hh:mm
-                        var horaFormateada = hora.getHours().toString().padStart(2, '0') + ':' + hora.getMinutes().toString().padStart(2, '0'); // Se formatea la hora en formato hh:mm
-                        var horaButton = $('<button/>').addClass('btn btn-outline-secondary btn-hora').text(horaFormateada);
+                        var horaFormateada = ('0' + hora.getHours()).slice(-2) + ':' + ('0' + hora.getMinutes()).slice(-2);
+                        // Se crea un botón con el identificador de hora
+                        var horaButton = $('<button/>').addClass('btn btn-outline-secondary btn-hora').text(horaFormateada).attr('id', hora.getHours());
                         $('#horas-container').append(horaButton);
                     });
+
+                    // Recorrer todos los botones de hora y asignar un controlador de eventos a cada uno
+                    for (var i = 1; i <= 24; i++) {
+                        // Construir el selector del botón
+                        var selector = '#hora-' + i;
+
+                        // Asignar el controlador de eventos
+                        $(selector).on('click', function () {
+                            // Obtener la horaId a partir del ID del botón
+                            var horaId = $(this).attr('id').split('-')[1];
+
+                            localStorage.removeItem("pares-primera");
+                            localStorage.removeItem(defecto.descripcion + "-" + pie);
+                        });
+                    }
                 },
                 error: function (xhr, status, error) {
                     console.log("Error al obtener las horas de turno: " + error);
@@ -174,13 +187,13 @@
         $(document).ready(function () {
             var paresPrimeraElement = $('#pares-primera');
             // Cargar la cantidad de pares de primera guardada en la memoria cache
-            var paresPrimera = parseInt(localStorage.getItem("pares-primera")) || 0; 
+            var paresPrimera = parseInt(localStorage.getItem("pares-primera")) || 0;
 
             // Función para actualizar el número de pares de primera y guardar la cantidad en la memoria cache
             function actualizarParesPrimera() {
                 paresPrimeraElement.text(paresPrimera);
                 // Guardar la cantidad de pares de primera en la memoria cache
-                localStorage.setItem("pares-primera", paresPrimera); 
+                localStorage.setItem("pares-primera", paresPrimera);
             }
 
             // Función para decrementar el número de pares de primera
