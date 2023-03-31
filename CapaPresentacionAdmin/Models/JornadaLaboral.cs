@@ -28,8 +28,11 @@ namespace CapaPresentacionAdmin.Models
         public Nullable<int> TotalPrimera { get; set; }
         public Nullable<int> TotalSegunda { get; set; }
         public Nullable<int> TotalHermanado { get; set; }
-    
+        public Nullable<System.TimeSpan> HoraRegistro { get; set; }
+        public Nullable<int> IdDefecto { get; set; }
+
         public virtual Turno Turno { get; set; }
+        public virtual Defecto Defecto { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<OrdenProduccion> OrdenProduccion { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

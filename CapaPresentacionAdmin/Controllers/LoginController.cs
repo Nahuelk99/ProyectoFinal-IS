@@ -56,6 +56,20 @@ namespace CapaPresentacionAdmin.Controllers
                     return View();
                 }
             }
+
+        }
+
+        public bool Login(string correo, string clave)
+        {
+            // Lógica de autenticación
+            if (correo == "tobiasarnedo@gmail.com" && clave == "Cal123")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public ActionResult Registrar()

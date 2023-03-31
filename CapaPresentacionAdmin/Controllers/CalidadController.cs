@@ -47,6 +47,34 @@ namespace CapaPresentacionAdmin.Controllers
 
         }
 
+        [HttpPost]
+        public ActionResult Inspeccionar(TimeSpan hora, int totalPrimera, List<Defecto> defectos)
+        {
+            // Obtener el empleado logueado
+            var correoEmpleado = FormsAuthentication.Decrypt(Request.Cookies[FormsAuthentication.FormsCookieName].Value).Name;
+            var empleado = db.Empleado.FirstOrDefault(e => e.Correo == correoEmpleado);
+
+            var ordenProduccion = db.OrdenProduccion.FirstOrDefault(op => op.SupervisorCalidad == empleado.DNI);
+
+            var jornadaLaboral = db.JornadaLaboral.FirstOrDefault(j => j.IdJornadaLaboral == ordenProduccion.IdJornadaLaboral);
+
+            if (jornadaLaboral == null)
+            {
+                TempData["ErrorMessage"] = "No se pudo encontrar la jornada laboral correspondiente.";
+                return RedirectToAction("Index");
+            }
+
+            jornadaLaboral.HoraRegistro = hora;
+            jornadaLaboral.TotalPrimera = totalPrimera;
+            //jornadaLaboral.Defecto| = defectos;
+
+            db.SaveChanges();
+
+            TempData["SuccessMessage"] = "Los datos de la inspección se han guardado exitosamente.";
+
+            return RedirectToAction("Index");
+        }
+
         public ActionResult AsociarOP()
         {
             // Obtener la lista de órdenes de producción sin SupervisorCalidad
